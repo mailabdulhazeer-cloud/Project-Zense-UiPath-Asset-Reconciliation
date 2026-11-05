@@ -1,0 +1,151 @@
+<Activity VisualBasic.Settings="{x:Null}" mc:Ignorable="sap sap2010" sap2010:WorkflowViewState.IdRef="ActivityBuilder_1" sap:VirtualizedContainerService.HintSize="850,2200" x:Class="Main" xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation" xmlns:sap2010="http://schemas.microsoft.com/netfx/2010/xaml/activities/presentation" xmlns:scg="clr-namespace:System.Collections.Generic;assembly=System.Private.CoreLib" xmlns:sco="clr-namespace:System.Collections.ObjectModel;assembly=System.Private.CoreLib" xmlns:sd="clr-namespace:System.Data;assembly=System.Data.Common" xmlns:ui="http://schemas.uipath.com/workflow/activities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <TextExpression.NamespacesForImplementation>
+    <sco:Collection x:TypeArguments="x:String">
+      <x:String>System.Activities</x:String>
+      <x:String>System.Activities.Statements</x:String>
+      <x:String>System.Activities.Expressions</x:String>
+      <x:String>System.Activities.Validation</x:String>
+      <x:String>System.Activities.XamlIntegration</x:String>
+      <x:String>Microsoft.VisualBasic</x:String>
+      <x:String>Microsoft.VisualBasic.Activities</x:String>
+      <x:String>System</x:String>
+      <x:String>System.Collections</x:String>
+      <x:String>System.Collections.Generic</x:String>
+      <x:String>System.Collections.ObjectModel</x:String>
+      <x:String>System.Data</x:String>
+      <x:String>System.Diagnostics</x:String>
+      <x:String>System.IO</x:String>
+      <x:String>System.Linq</x:String>
+      <x:String>System.Xml.Serialization</x:String>
+      <x:String>UiPath.Core</x:String>
+      <x:String>UiPath.Core.Activities</x:String>
+      <x:String>UiPath.Excel</x:String>
+      <x:String>UiPath.Excel.Activities</x:String>
+      <x:String>System.ComponentModel</x:String>
+      <x:String>System.Runtime.Serialization</x:String>
+    </sco:Collection>
+  </TextExpression.NamespacesForImplementation>
+  <TextExpression.ReferencesForImplementation>
+    <sco:Collection x:TypeArguments="AssemblyReference">
+      <AssemblyReference>System.Activities</AssemblyReference>
+      <AssemblyReference>Microsoft.VisualBasic</AssemblyReference>
+      <AssemblyReference>System.Private.CoreLib</AssemblyReference>
+      <AssemblyReference>System.Data</AssemblyReference>
+      <AssemblyReference>System.Data.Common</AssemblyReference>
+      <AssemblyReference>System.Data.DataSetExtensions</AssemblyReference>
+      <AssemblyReference>System</AssemblyReference>
+      <AssemblyReference>System.IO.FileSystem.Watcher</AssemblyReference>
+      <AssemblyReference>System.IO.Packaging</AssemblyReference>
+      <AssemblyReference>System.IO.FileSystem.AccessControl</AssemblyReference>
+      <AssemblyReference>System.IO.FileSystem.DriveInfo</AssemblyReference>
+      <AssemblyReference>System.Linq</AssemblyReference>
+      <AssemblyReference>System.Core</AssemblyReference>
+      <AssemblyReference>System.Xml</AssemblyReference>
+      <AssemblyReference>System.Xml.Linq</AssemblyReference>
+      <AssemblyReference>UiPath.System.Activities</AssemblyReference>
+      <AssemblyReference>UiPath.Excel.Activities</AssemblyReference>
+      <AssemblyReference>UiPath.Excel</AssemblyReference>
+      <AssemblyReference>System.Memory</AssemblyReference>
+      <AssemblyReference>System.ComponentModel.Primitives</AssemblyReference>
+      <AssemblyReference>System.ComponentModel</AssemblyReference>
+      <AssemblyReference>System.ComponentModel.TypeConverter</AssemblyReference>
+      <AssemblyReference>System.Runtime.Serialization.Formatters</AssemblyReference>
+    </sco:Collection>
+  </TextExpression.ReferencesForImplementation>
+
+  <Sequence DisplayName="Main - Full 3-Step Asset RFID Tag Merge &amp; 'Not Assigned' Fill" sap2010:WorkflowViewState.IdRef="Sequence_1" sap:VirtualizedContainerService.HintSize="600,2120">
+    <Sequence.Variables>
+      <Variable Default="ZH_ASSETTAGGINGDATA_22-10-2026 (003).xlsx" Name="str_TaggingFilePath" x:TypeArguments="x:String"/>
+      <Variable Default="ZH_IT_CseInstalledBaseAssetImport_Floor update.xlsm" Name="str_ImportFilePath" x:TypeArguments="x:String"/>
+      <Variable Name="dt_Tagging" x:TypeArguments="sd:DataTable"/>
+      <Variable Name="dt_Assets" x:TypeArguments="sd:DataTable"/>
+      <Variable Name="dt_OutputColA" x:TypeArguments="sd:DataTable"/>
+      <Variable Name="dict_SerialToRFID" x:TypeArguments="scg:Dictionary(x:String, x:String)"/>
+      <Variable Name="dict_AssetNumToRFID" x:TypeArguments="scg:Dictionary(x:String, x:String)"/>
+      <Variable Default="0" Name="int_SerialMatchCount" x:TypeArguments="x:Int32"/>
+      <Variable Default="0" Name="int_AssetNumMatchCount" x:TypeArguments="x:Int32"/>
+      <Variable Default="0" Name="int_NotAssignedCount" x:TypeArguments="x:Int32"/>
+    </Sequence.Variables>
+
+    <!-- 0A. Check if Tagging File exists in Project Folder; if not, prompt user to select it -->
+    <If Condition="[Not System.IO.File.Exists(str_TaggingFilePath)]" DisplayName="If - Tagging File Not Found in Project Folder" sap:VirtualizedContainerService.HintSize="538,310" sap2010:WorkflowViewState.IdRef="If_1">
+      <If.Then>
+        <Sequence DisplayName="Browse Tagging File" sap:VirtualizedContainerService.HintSize="400,180" sap2010:WorkflowViewState.IdRef="Sequence_3">
+          <ui:SelectFile DisplayName="Select ZH_ASSETTAGGINGDATA_22-10-2026 (003).xlsx" Filter="Excel Files|*.xlsx;*.xlsm;*.xls" sap:VirtualizedContainerService.HintSize="338,138" sap2010:WorkflowViewState.IdRef="SelectFile_1" SelectedFile="[str_TaggingFilePath]" />
+        </Sequence>
+      </If.Then>
+    </If>
+
+    <!-- 0B. Check if Import XLSM File exists in Project Folder; if not, prompt user to select it -->
+    <If Condition="[Not System.IO.File.Exists(str_ImportFilePath)]" DisplayName="If - Import XLSM File Not Found in Project Folder" sap:VirtualizedContainerService.HintSize="538,310" sap2010:WorkflowViewState.IdRef="If_2">
+      <If.Then>
+        <Sequence DisplayName="Browse Import File" sap:VirtualizedContainerService.HintSize="400,180" sap2010:WorkflowViewState.IdRef="Sequence_4">
+          <ui:SelectFile DisplayName="Select ZH_IT_CseInstalledBaseAssetImport_Floor update.xlsm" Filter="Excel Macro-Enabled Workbook|*.xlsm;*.xlsx" sap:VirtualizedContainerService.HintSize="338,138" sap2010:WorkflowViewState.IdRef="SelectFile_2" SelectedFile="[str_ImportFilePath]" />
+        </Sequence>
+      </If.Then>
+    </If>
+
+    <!-- 1. Read Tagging Excel File (Sheet 'IT': Col A = RFID Tag, Col I = Serial Number, Col N = Asset Number) -->
+    <ui:ReadRange AddHeaders="True" DataTable="[dt_Tagging]" DisplayName="Read Range - Tagging Data (IT Sheet)" sap:VirtualizedContainerService.HintSize="538,88" sap2010:WorkflowViewState.IdRef="ReadRange_1" Range="" SheetName="IT" WorkbookPath="[str_TaggingFilePath]" />
+
+    <!-- 2A. Build Dictionary 1: Column I ('Serial Number') -> Column A ('RFID Tag') -->
+    <Assign DisplayName="Assign - Build Serial Number to RFID Dictionary" sap2010:WorkflowViewState.IdRef="Assign_1" sap:VirtualizedContainerService.HintSize="538,82">
+      <Assign.To>
+        <OutArgument x:TypeArguments="scg:Dictionary(x:String, x:String)">[dict_SerialToRFID]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="scg:Dictionary(x:String, x:String)">[dt_Tagging.AsEnumerable().Where(Function(r) Not IsNothing(r("Serial Number")) AndAlso Not String.IsNullOrWhiteSpace(r("Serial Number").ToString.Trim) AndAlso Not {"NIL", "NO ACCESS", "NONE", "NAN"}.Contains(r("Serial Number").ToString.Trim.ToUpper)).GroupBy(Function(r) r("Serial Number").ToString.Trim.ToUpper).ToDictionary(Function(g) g.Key, Function(g) g.First()("RFID Tag").ToString.Trim)]</InArgument>
+      </Assign.Value>
+    </Assign>
+
+    <!-- 2B. Build Dictionary 2: Column N ('Asset Number') -> Column A ('RFID Tag') -->
+    <Assign DisplayName="Assign - Build Asset Number to RFID Dictionary" sap2010:WorkflowViewState.IdRef="Assign_2" sap:VirtualizedContainerService.HintSize="538,82">
+      <Assign.To>
+        <OutArgument x:TypeArguments="scg:Dictionary(x:String, x:String)">[dict_AssetNumToRFID]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="scg:Dictionary(x:String, x:String)">[dt_Tagging.AsEnumerable().Where(Function(r) Not IsNothing(r("Asset Number")) AndAlso Not String.IsNullOrWhiteSpace(r("Asset Number").ToString.Trim) AndAlso Not {"NIL", "NO ACCESS", "NONE", "NAN"}.Contains(r("Asset Number").ToString.Trim.ToUpper)).GroupBy(Function(r) r("Asset Number").ToString.Trim.ToUpper).ToDictionary(Function(g) g.Key, Function(g) g.First()("RFID Tag").ToString.Trim)]</InArgument>
+      </Assign.Value>
+    </Assign>
+
+    <!-- 3. Open .xlsm File in Excel Application Scope to Preserve Macros & Formatting -->
+    <ui:ExcelApplicationScope Password="{x:Null}" DisplayName="Excel Application Scope - Asset Import XLSM" sap:VirtualizedContainerService.HintSize="538,880" sap2010:WorkflowViewState.IdRef="ExcelApplicationScope_1" InstanceCachePeriod="3000" Visible="False" WorkbookPath="[str_ImportFilePath]">
+      <ui:ExcelApplicationScope.Body>
+        <ActivityAction x:TypeArguments="ui:WorkbookApplication">
+          <ActivityAction.Argument>
+            <DelegateInArgument Name="ExcelWorkbookScope" x:TypeArguments="ui:WorkbookApplication"/>
+          </ActivityAction.Argument>
+          <Sequence DisplayName="Execute 3-Step Match &amp; Update Column A (A6:A9625)" sap2010:WorkflowViewState.IdRef="Sequence_2" sap:VirtualizedContainerService.HintSize="504,770">
+            
+            <!-- Read Assets Sheet starting from Row 5 where Technical Headers reside -->
+            <ui:ExcelReadRange AddHeaders="True" DataTable="[dt_Assets]" DisplayName="Read Range - Assets Sheet (From A5)" sap:VirtualizedContainerService.HintSize="442,60" sap2010:WorkflowViewState.IdRef="ExcelReadRange_1" Range="A5" SheetName="Assets" />
+
+            <!-- Prepare single-column DataTable for fast batch write to Column A (A6 downwards) -->
+            <ui:BuildDataTable DataTable="[dt_OutputColA]" DisplayName="Build Data Table - Column A Output" sap:VirtualizedContainerService.HintSize="442,60" sap2010:WorkflowViewState.IdRef="BuildDataTable_1" TableInfo="&lt;NewDataSet&gt;&lt;xs:schema id='NewDataSet' xmlns='' xmlns:xs='http://www.w3.org/2001/XMLSchema' xmlns:msdata='urn:schemas-microsoft-com:xml-msdata'&gt;&lt;xs:element name='NewDataSet' msdata:IsDataSet='true' msdata:MainDataTable='TableName' msdata:UseCurrentLocale='true'&gt;&lt;xs:complexType&gt;&lt;xs:choice minOccurs='0' maxOccurs='unbounded'&gt;&lt;xs:element name='TableName'&gt;&lt;xs:complexType&gt;&lt;xs:sequence&gt;&lt;xs:element name='Technical_x0020_Name' msdata:Caption='' type='xs:string' minOccurs='0' /&gt;&lt;/xs:sequence&gt;&lt;/xs:complexType&gt;&lt;/xs:element&gt;&lt;/xs:choice&gt;&lt;/xs:complexType&gt;&lt;/xs:element&gt;&lt;/xs:schema&gt;&lt;/NewDataSet&gt;" />
+
+            <!-- Step 1: Match SERIAL_NUMBER (Col R) -> Step 2: Match ASSET_NUMBER (Col E) -> Step 3: Else 'Not Assigned' -->
+            <ui:InvokeCode ContinueOnError="{x:Null}" Code="For Each row As System.Data.DataRow In io_dtAssets.Rows&#xA;    Dim serialVal As String = If(row(&quot;SERIAL_NUMBER&quot;) IsNot Nothing, row(&quot;SERIAL_NUMBER&quot;).ToString().Trim().ToUpper(), &quot;&quot;)&#xA;    Dim assetNumVal As String = If(row(&quot;ASSET_NUMBER&quot;) IsNot Nothing, row(&quot;ASSET_NUMBER&quot;).ToString().Trim().ToUpper(), &quot;&quot;)&#xA;    Dim assignedVal As String = &quot;Not Assigned&quot;&#xA;&#xA;    If Not String.IsNullOrEmpty(serialVal) AndAlso in_dictSerial.ContainsKey(serialVal) Then&#xA;        assignedVal = in_dictSerial(serialVal)&#xA;        io_SerialMatchCount += 1&#xA;    ElseIf Not String.IsNullOrEmpty(assetNumVal) AndAlso in_dictAssetNum.ContainsKey(assetNumVal) Then&#xA;        assignedVal = in_dictAssetNum(assetNumVal)&#xA;        io_AssetNumMatchCount += 1&#xA;    Else&#xA;        assignedVal = &quot;Not Assigned&quot;&#xA;        io_NotAssignedCount += 1&#xA;    End If&#xA;&#xA;    row(&quot;Technical Name&quot;) = assignedVal&#xA;    io_dtOutputColA.Rows.Add(assignedVal)&#xA;Next" DisplayName="Invoke Code - 3-Step Serial, Asset Number &amp; 'Not Assigned'" sap:VirtualizedContainerService.HintSize="442,165" sap2010:WorkflowViewState.IdRef="InvokeCode_1">
+              <ui:InvokeCode.Arguments>
+                <InOutArgument x:Key="io_dtAssets" x:TypeArguments="sd:DataTable">[dt_Assets]</InOutArgument>
+                <InArgument x:Key="in_dictSerial" x:TypeArguments="scg:Dictionary(x:String, x:String)">[dict_SerialToRFID]</InArgument>
+                <InArgument x:Key="in_dictAssetNum" x:TypeArguments="scg:Dictionary(x:String, x:String)">[dict_AssetNumToRFID]</InArgument>
+                <InOutArgument x:Key="io_dtOutputColA" x:TypeArguments="sd:DataTable">[dt_OutputColA]</InOutArgument>
+                <InOutArgument x:Key="io_SerialMatchCount" x:TypeArguments="x:Int32">[int_SerialMatchCount]</InOutArgument>
+                <InOutArgument x:Key="io_AssetNumMatchCount" x:TypeArguments="x:Int32">[int_AssetNumMatchCount]</InOutArgument>
+                <InOutArgument x:Key="io_NotAssignedCount" x:TypeArguments="x:Int32">[int_NotAssignedCount]</InOutArgument>
+              </ui:InvokeCode.Arguments>
+            </ui:InvokeCode>
+
+            <!-- Write ONLY Column A (A6:A9625) to preserve all other columns and macros -->
+            <ui:ExcelWriteRange AddHeaders="False" DataTable="[dt_OutputColA]" DisplayName="Write Range - Update Column A (A6)" sap:VirtualizedContainerService.HintSize="442,88" sap2010:WorkflowViewState.IdRef="ExcelWriteRange_1" SheetName="Assets" StartingCell="A6" />
+
+            <ui:ExcelSaveWorkbook DisplayName="Save Workbook" sap:VirtualizedContainerService.HintSize="442,25" sap2010:WorkflowViewState.IdRef="ExcelSaveWorkbook_1" />
+          </Sequence>
+        </ActivityAction>
+      </ui:ExcelApplicationScope.Body>
+    </ui:ExcelApplicationScope>
+
+    <!-- 4. Log Detailed Breakdown -->
+    <ui:LogMessage DisplayName="Log Message - Full Summary" sap:VirtualizedContainerService.HintSize="538,92" sap2010:WorkflowViewState.IdRef="LogMessage_1" Level="Info" Message="[&quot;3-Step Merge Complete! | Step 1 (Serial Number Matches): &quot; &amp; int_SerialMatchCount.ToString() &amp; &quot; | Step 2 (Asset Number Fallback Matches): &quot; &amp; int_AssetNumMatchCount.ToString() &amp; &quot; | Total Assigned: &quot; &amp; (int_SerialMatchCount + int_AssetNumMatchCount).ToString() &amp; &quot; | Step 3 ('Not Assigned' Filled): &quot; &amp; int_NotAssignedCount.ToString()]" />
+  </Sequence>
+</Activity>
