@@ -1,0 +1,14 @@
+# Exclude hospital production Excel workbooks for data security
+*.xlsx
+*.xlsm
+*.xls
+
+# Exclude UiPath local cache and temporary files
+.local/
+.settings/
+.tmh/
+.objects/
+.screenshots/
+~*
+*.bak
+*.nupkg
